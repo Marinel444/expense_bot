@@ -1,44 +1,48 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Integer, Float, ForeignKey, DateTime
 from datetime import datetime
 from base import Base
 
 
 class User(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    telegram_id = Column(Integer, unique=True, nullable=False)
-    username = Column(String)
+    __tablename__ = "users"
 
-    expenses = relationship("Expense", back_populates="user")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    telegram_id: Mapped[int] = mapped_column(unique=True)
+    username: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    expenses: Mapped[list["Expense"]] = relationship(back_populates="user")
 
 
 class Category(Base):
-    __tablename__ = 'categories'
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, nullable=False)
+    __tablename__ = "categories"
 
-    expenses = relationship("Expense", back_populates="category")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True)
+
+    expenses: Mapped[list["Expense"]] = relationship(back_populates="category")
 
 
 class Currency(Base):
-    __tablename__ = 'currencies'
-    id = Column(Integer, primary_key=True)
-    code = Column(String, unique=True, nullable=False)
-    symbol = Column(String)
+    __tablename__ = "currencies"
 
-    expenses = relationship("Expense", back_populates="currency")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(unique=True)  # 'UAH', 'USD'
+    symbol: Mapped[str | None] = mapped_column(nullable=True)  # '₴', '$'
+
+    expenses: Mapped[list["Expense"]] = relationship(back_populates="currency")
 
 
 class Expense(Base):
-    __tablename__ = 'expenses'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    category_id = Column(Integer, ForeignKey("categories.id"))
-    currency_id = Column(Integer, ForeignKey("currencies.id"))
-    amount = Column(Float, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    __tablename__ = "expenses"
 
-    user = relationship("User", back_populates="expenses")
-    category = relationship("Category", back_populates="expenses")
-    currency = relationship("Currency", back_populates="expenses")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
+    currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id"))
+    amount: Mapped[float] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+    user: Mapped["User"] = relationship(back_populates="expenses")
+    category: Mapped["Category"] = relationship(back_populates="expenses")
+    currency: Mapped["Currency"] = relationship(back_populates="expenses")
