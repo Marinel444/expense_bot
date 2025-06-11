@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, Float, ForeignKey, DateTime
 from datetime import datetime
-from base import Base
+from .base import Base
 
 
 class User(Base):
@@ -41,6 +41,7 @@ class Expense(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id"))
     amount: Mapped[float] = mapped_column(nullable=False)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     user: Mapped["User"] = relationship(back_populates="expenses")
