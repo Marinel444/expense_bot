@@ -18,6 +18,7 @@ async def start_handler(message: types.Message, state: FSMContext):
         stmt = select(User).where(User.telegram_id == message.from_user.id)
         result = await session.execute(stmt)
         user = result.scalar_one_or_none()
+        print("user = ", user)
 
         if not user:
             user = User(
@@ -26,6 +27,9 @@ async def start_handler(message: types.Message, state: FSMContext):
             )
             session.add(user)
             await session.commit()
+            await session.refresh(user)
+            print("user create = ", user)
+
 
     await message.answer(
         "Выбери категорию трат:",

@@ -6,7 +6,7 @@ from sqlalchemy import select
 from bot.keyboards.categories import get_category_keyboard
 from bot.keyboards.main_menu import get_main_menu_keyboard
 from bot.states import ExpenseStates
-from database.models import Expense, Currency
+from database.models import Expense, Currency, User
 from database.db import async_session
 from datetime import datetime
 
@@ -78,7 +78,10 @@ async def enter_amount(message: types.Message, state: FSMContext):
     category_id = data.get("category_id")
 
     async with async_session() as session:
-        user_id = message.from_user.id
+        user_id = await session.execute(
+            select(User).where(User.telegram_id == message.from_user.id)
+        )
+        user_id = user_id.scalar_one_or_none()
 
         print("currency_code = ", currency_code)
         result = await session.execute(select(Currency).where(Currency.code == currency_code))
@@ -88,7 +91,7 @@ async def enter_amount(message: types.Message, state: FSMContext):
             currency = result.scalar_one()
 
         expense = Expense(
-            user_id=user_id,
+            user_id=user_id.id,
             category_id=category_id,
             currency_id=currency.id,
             amount=amount,
