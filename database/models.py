@@ -30,8 +30,6 @@ class Currency(Base):
     code: Mapped[str] = mapped_column(unique=True)
     symbol: Mapped[str | None] = mapped_column(nullable=True)
 
-    expenses: Mapped[list["Expense"]] = relationship(back_populates="currency")
-
 
 class Expense(Base):
     __tablename__ = "expenses"
@@ -39,11 +37,9 @@ class Expense(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
-    currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id"))
     amount: Mapped[float] = mapped_column(nullable=False)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     user: Mapped["User"] = relationship(back_populates="expenses")
     category: Mapped["Category"] = relationship(back_populates="expenses")
-    currency: Mapped["Currency"] = relationship(back_populates="expenses")
