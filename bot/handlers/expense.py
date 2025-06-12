@@ -90,7 +90,7 @@ async def enter_amount(message: types.Message, state: FSMContext):
             result = await session.execute(select(Currency).where(Currency.code == "UAH"))
             currency = result.scalar_one()
 
-        amount = await get_currency_rate(amount=amount, symbols=currency.code)
+        amount = round(await get_currency_rate(amount=amount, symbols=currency.code))
         if not amount:
             amount = round(await get_default_currency(amount=amount, symbols=currency.code), 2)
 
