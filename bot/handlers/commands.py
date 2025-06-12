@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 
 from bot.keyboards.categories import get_category_keyboard
 from bot.keyboards.main_menu import get_main_menu_keyboard
+from bot.keyboards.stats_keyboards import get_stats_keyboard
 from bot.states import ExpenseStates
 from database.models import User
 from database.db import async_session
@@ -18,7 +19,6 @@ async def start_handler(message: types.Message, state: FSMContext):
         stmt = select(User).where(User.telegram_id == message.from_user.id)
         result = await session.execute(stmt)
         user = result.scalar_one_or_none()
-        print("user = ", user)
 
         if not user:
             user = User(
@@ -28,7 +28,6 @@ async def start_handler(message: types.Message, state: FSMContext):
             session.add(user)
             await session.commit()
             await session.refresh(user)
-            print("user create = ", user)
 
 
     await message.answer(
@@ -45,3 +44,19 @@ async def expense_handler(message: types.Message, state: FSMContext):
         reply_markup=await get_category_keyboard()
     )
     await state.set_state(ExpenseStates.choosing_category)
+
+
+@router.message(Command("stats"))
+async def expense_handler(message: types.Message):
+    await message.answer(
+        "Доступный функционал:",
+        reply_markup=await get_stats_keyboard()
+    )
+
+
+@router.message(Command("admin"))
+async def expense_handler(message: types.Message, state: FSMContext):
+    await message.answer("Password:")
+    await state.set_state(ExpenseStates.get_admin)
+
+

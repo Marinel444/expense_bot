@@ -4,7 +4,7 @@ from aiogram.types import BotCommand
 from config import BOT_TOKEN
 from database.db import init_db, async_session
 from database.models import Category, Currency
-from bot.handlers import expense, commands
+from bot.handlers import expense, commands, stats_report, administration
 from sqlalchemy import select
 
 
@@ -44,7 +44,12 @@ async def main():
         BotCommand(command="settings", description="⚙️ Настройки"),
     ])
 
-    dp.include_routers(commands.router, expense.router)
+    dp.include_routers(
+        commands.router,
+        expense.router,
+        stats_report.router,
+        administration.router,
+    )
 
     await init_db()
     await seed_data()
