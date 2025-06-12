@@ -10,6 +10,8 @@ from database.models import Expense, Currency, User
 from database.db import async_session
 from datetime import datetime
 
+from services.currency import get_currency_rate, get_default_currency
+
 router = Router()
 
 
@@ -82,18 +84,19 @@ async def enter_amount(message: types.Message, state: FSMContext):
             select(User).where(User.telegram_id == message.from_user.id)
         )
         user_id = user_id.scalar_one_or_none()
-
-        print("currency_code = ", currency_code)
         result = await session.execute(select(Currency).where(Currency.code == currency_code))
         currency = result.scalar_one_or_none()
         if not currency:
             result = await session.execute(select(Currency).where(Currency.code == "UAH"))
             currency = result.scalar_one()
 
+        amount = await get_currency_rate(amount=amount, symbols=currency.code)
+        if not amount:
+            amount = round(await get_default_currency(amount=amount, symbols=currency.code), 2)
+
         expense = Expense(
             user_id=user_id.id,
             category_id=category_id,
-            currency_id=currency.id,
             amount=amount,
             description=description,
             created_at=datetime.utcnow()
@@ -101,5 +104,5 @@ async def enter_amount(message: types.Message, state: FSMContext):
         session.add(expense)
         await session.commit()
 
-    await message.answer(f"✅ Трата {amount} {currency.symbol or currency.code} сохранена!")
+    await message.answer(f"✅ Трата {amount} $ сохранена!")
     await state.clear()
